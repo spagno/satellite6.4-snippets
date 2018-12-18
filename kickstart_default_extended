@@ -1,6 +1,6 @@
 <%#
 kind: provision
-name: Kickstart default
+name: Kickstart default extended
 model: ProvisioningTemplate
 oses:
 - CentOS
@@ -148,17 +148,14 @@ exec < /dev/tty3 > /dev/tty3
 /usr/bin/chvt 3
 (
 <% if subnet.respond_to?(:dhcp_boot_mode?) || @host.subnet6.respond_to?(:dhcp_boot_mode?) -%>
-<%= snippet 'kickstart_networking_setup' %>
+<%= snippet 'kickstart_networking_setup_extended' %>
+<%= snippet 'fix_default_gw' %>
 <% end -%>
 
 #update local time
 echo "updating system time"
 /usr/sbin/ntpdate -sub <%= host_param('ntp-server') || '0.fedora.pool.ntp.org' %>
 /usr/sbin/hwclock --systohc
-
-#fix if public ip
-echo "fix default gw for public ip"
-<%= snippet 'fix_default_gw_for_public_ip' %>
 
 <% if proxy_uri -%>
 # Yum proxy
@@ -169,7 +166,7 @@ echo 'proxy = <%= proxy_uri %>' >> /etc/yum.conf
 <%= snippet 'epel' -%>
 <% end -%>
 
-<%= snippet 'redhat_register' %>
+<%= snippet 'redhat_register_extended' %>
 
 <% if host_enc['parameters']['realm'] && @host.realm && @host.realm.realm_type == 'FreeIPA' -%>
 <%= snippet 'freeipa_register' %>
@@ -218,3 +215,4 @@ wget -q -O /dev/null --no-check-certificate <%= foreman_url('built') %>
 exit 0
 
 <%= section_end -%>
+
